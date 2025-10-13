@@ -18,11 +18,14 @@ $sm = new SessionManager($config, $logger, $anomaly);
 $sm->start(); // starts secure session
 
 // simple auth demo
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['username'] === 'test' && $_POST['password'] === 'pass') {
     $sm->set('user_id', 'test');
     $sm->regenerate();
+    
     echo "Logged in and session regenerated.";
     echo "<p>Session regenerated.</p>";
+    
 echo "<pre>Old session id: " . htmlspecialchars($result['old']) . "\n";
 echo "New session id: " . htmlspecialchars($result['new']) . "</pre>";
 
