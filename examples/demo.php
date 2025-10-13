@@ -22,6 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['username'] === 'test' && $_
     $sm->set('user_id', 'test');
     $sm->regenerate();
     echo "Logged in and session regenerated.";
+    echo "<p>Session regenerated.</p>";
+echo "<pre>Old session id: " . htmlspecialchars($result['old']) . "\n";
+echo "New session id: " . htmlspecialchars($result['new']) . "</pre>";
+
+    echo "";
 } else {
     echo "<form method='POST'><input name='username'><input name='password'><button>Login</button></form>";
 }
+
+

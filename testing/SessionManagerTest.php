@@ -17,8 +17,8 @@ class SessionManagerTest extends TestCase
             session_destroy();
         }
         @mkdir(__DIR__ . '/../data');
-        $storage = new \SecureSession\Storage\SqliteStorage(__DIR__ . '/../data/test.sqlite');
-        $logger = new \SecureSession\Logger($storage, 'test_key');
+        $storage = new SqliteStorage(__DIR__ . '/../data/test.sqlite');
+        $logger = new Logger($storage, 'test_key');
         $this->sm = new SessionManager(new SecurityConfig(), $logger, new AnomalyDetector());
     }
 

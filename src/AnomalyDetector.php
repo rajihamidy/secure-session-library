@@ -3,18 +3,28 @@ namespace SecureSession;
 
 class AnomalyDetector
 {
-    public function detect(array $sessionContext, array $previousContext = null): array
-    {
-        $anomalies = [];
-        if ($previousContext) {
-            if (isset($sessionContext['ip'], $previousContext['ip']) && $sessionContext['ip'] !== $previousContext['ip']) {
-                $anomalies[] = 'ip_change';
-            }
-            if (isset($sessionContext['fingerprint'], $previousContext['fingerprint']) &&
-                $sessionContext['fingerprint'] !== $previousContext['fingerprint']) {
-                $anomalies[] = 'fingerprint_mismatch';
-            }
-        }
-        return $anomalies;
+public function detect(array $sessionContext, ?array $previousContext = null): array
+{
+    if ($previousContext === null) {
+        return ['status' => 'normal'];
     }
+
+    // Compare contexts
+    $anomalies = [];
+
+    if ($sessionContext['ip'] !== $previousContext['ip']) {
+        $anomalies[] = 'IP address changed';
+    }
+   if (
+    isset($sessionContext['user_agent'], $previousContext['user_agent']) &&
+    $sessionContext['user_agent'] !== $previousContext['user_agent']
+) {
+    $anomalies[] = 'Device/User-Agent changed';
+}
+
+
+    return count($anomalies)
+        ? ['status' => 'anomalous', 'details' => $anomalies]
+        : ['status' => 'normal'];
+}
 }
