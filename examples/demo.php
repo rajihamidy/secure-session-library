@@ -102,7 +102,7 @@ New Session ID: {$newId}
             </form>
         </div>
         <div class="card-footer text-center text-muted small py-2">
-            &copy; <?= date('Y'); ?> Secure Session Framework
+            &copy; <?= date('Y'); ?> Secure Session library
         </div>
     </div>
 <?php endif; ?>
