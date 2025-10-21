@@ -6,3 +6,6 @@ Produce complete PHPUnit tests and CI config (GitHub Actions).
 Create a simple demo application with pages (login, profile, logout).
 
 Prepare slides/screenshots showing integration for your defense.
+
+php -S localhost:8000 -t examples
+# browse http://localhost:8000/demo.php
