@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit beStrictAboutOutputDuringTests="false" bootstrap="testing/bootstrap.php">
+
+    <testsuites>
+        <testsuite name="Secure Session Tests">
+            <directory>./testing</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

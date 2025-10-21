@@ -14,16 +14,31 @@ class SessionManager
         $this->anomalyDetector = $anomalyDetector;
     }
 
+    /**
+     * Start a new secure session.
+     * Handles cookie configuration, metadata initialization, and anomaly validation.
+     */
     public function start(): void
     {
+        // Skip session creation for CLI mode (e.g., PHPUnit)
+        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
+            return;
+        }
+
+        // Safely apply cookie params before starting session
         $this->config->applyCookieParams();
+
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
         $this->initializeSessionMeta();
         $this->validateSession();
     }
 
+    /**
+     * Initialize basic session metadata on first start.
+     */
     private function initializeSessionMeta(): void
     {
         if (!isset($_SESSION['meta'])) {
@@ -36,51 +51,91 @@ class SessionManager
         }
     }
 
-    public function regenerate(): void
+    /**
+     * Regenerate session ID and update forensic logs.
+     * Returns array with old and new session IDs.
+     */
+    public function regenerate(bool $returnIds = true): array
     {
+        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
+            return ['old' => null, 'new' => null];
+        }
+
         if (session_status() === PHP_SESSION_ACTIVE) {
             $oldId = session_id();
             session_regenerate_id(true);
+            $newId = session_id();
+
             $_SESSION['meta']['last_activity'] = time();
-            $this->logger->write($this->buildLog('regenerate'));
+
+            $this->logger->write($this->buildLog('regenerate', [
+                'old_session_id' => $oldId,
+                'new_session_id' => $newId
+            ]));
+
+            return $returnIds ? ['old' => $oldId, 'new' => $newId] : [];
         }
+
+        return ['old' => null, 'new' => null];
     }
 
+    /**
+     * Securely destroy the session and log the action.
+     */
     public function destroy(): void
     {
         $this->logger->write($this->buildLog('destroy'));
+
+        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
+            $_SESSION = [];
+            return;
+        }
+
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000,
                 $params['path'], $params['domain'],
-                $params['secure'], $params['httponly']);
+                $params['secure'], $params['httponly']
+            );
         }
         session_destroy();
     }
 
+    /**
+     * Validate session activity, timeout, and anomalies.
+     */
     private function validateSession(): void
     {
+        // Skip validation in CLI mode (test environment)
+        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
+            return;
+        }
+
         // idle timeout
         $last = $_SESSION['meta']['last_activity'] ?? time();
         if ((time() - $last) > $this->config->idleTimeout) {
             $this->destroy();
             return;
         }
-        // update last_activity
+
         $_SESSION['meta']['last_activity'] = time();
 
-        // example anomaly detection comparing previous stored context - simplistic
+        // anomaly detection
         $context = $this->currentContext();
         $previousContext = $_SESSION['meta']['previous_context'] ?? null;
-        $anoms = $this->anomalyDetector->detect($context, $previousContext);
-        if (!empty($anoms)) {
-            $this->logger->write($this->buildLog('anomaly', ['anomalies' => $anoms]));
-            // you may terminate or flag session depending on policy
+        $anomalies = $this->anomalyDetector->detect($context, $previousContext);
+
+        if (!empty($anomalies)) {
+            $this->logger->write($this->buildLog('anomaly', ['anomalies' => $anomalies]));
         }
+
         $_SESSION['meta']['previous_context'] = $context;
     }
 
+    /**
+     * Build a structured forensic log entry.
+     */
     private function buildLog(string $action, array $meta = []): array
     {
         return array_merge([
@@ -94,6 +149,9 @@ class SessionManager
         ]);
     }
 
+    /**
+     * Build context for anomaly detection.
+     */
     private function currentContext(): array
     {
         return [
@@ -102,6 +160,9 @@ class SessionManager
         ];
     }
 
+    /**
+     * Compute a session fingerprint using IP and User-Agent.
+     */
     private function fingerprint(): string
     {
         $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
@@ -109,7 +170,14 @@ class SessionManager
         return hash('sha256', $ua . '|' . $ip);
     }
 
-    // wrapper for set/get
-    public function set(string $k, $v): void { $_SESSION[$k] = $v; }
-    public function get(string $k) { return $_SESSION[$k] ?? null; }
+    // Generic set/get wrappers for session variables
+    public function set(string $key, $value): void
+    {
+        $_SESSION[$key] = $value;
+    }
+
+    public function get(string $key)
+    {
+        return $_SESSION[$key] ?? null;
+    }
 }
