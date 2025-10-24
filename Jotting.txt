@@ -9,3 +9,6 @@ Prepare slides/screenshots showing integration for your defense.
 
 php -S localhost:8000 -t examples
 # browse http://localhost:8000/demo.php
+
+to carryout Unit test
+vendor/bin/phpunit --testdox

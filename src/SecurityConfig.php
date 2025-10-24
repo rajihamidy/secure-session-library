@@ -3,9 +3,9 @@ namespace SecureSession;
 
 class SecurityConfig
 {
-    public int $idleTimeout = 900; // seconds
+    public int $idleTimeout = 300; // seconds
     public ?int $absoluteTimeout = 86400; // optional absolute expiry
-    public string $sameSite = 'Lax'; // 'Strict' | 'Lax' | 'None'
+    public string $sameSite = 'Lax'; // 'Strict' | 'Lax' | 'None' mitigates CSRF attacks
     public bool $secureCookie = true;
     public bool $httpOnly = true;
     public string $cookiePath = '/';
@@ -15,6 +15,10 @@ class SecurityConfig
      * Apply secure cookie parameters safely.
      * Skips cookie configuration if headers already sent
      * or running in CLI mode (e.g., PHPUnit testing).
+     * httponly = true → prevents JavaScript access (protects against XSS)
+    * secure = true → ensures cookies are sent only over HTTPS
+    * samesite = 'Strict' or 'Lax' → mitigates CSRF attacks
+    * path and domain restrictions → limits cookie scope
      */
     public function applyCookieParams(): void
     {

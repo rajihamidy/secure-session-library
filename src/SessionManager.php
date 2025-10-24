@@ -20,16 +20,20 @@ class SessionManager
      */
     public function start(): void
     {
-        // Skip session creation for CLI mode (e.g., PHPUnit)
-        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
-            return;
-        }
+        $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');//checking for commandline or browser environment
 
-        // Safely apply cookie params before starting session
-        $this->config->applyCookieParams();
-
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        // Only apply cookie params and start session if not in CLI
+        if (!$isCli) {
+            $this->config->applyCookieParams();
+            
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+        } else {
+            // In CLI mode (testing), manually start session if not already active
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
         }
 
         $this->initializeSessionMeta();
@@ -57,13 +61,16 @@ class SessionManager
      */
     public function regenerate(bool $returnIds = true): array
     {
-        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
-            return ['old' => null, 'new' => null];
-        }
+        $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
 
         if (session_status() === PHP_SESSION_ACTIVE) {
             $oldId = session_id();
-            session_regenerate_id(true);
+            
+            // Only regenerate ID if not in CLI (may not work properly in CLI)
+            if (!$isCli) {
+                session_regenerate_id(true);
+            }
+            
             $newId = session_id();
 
             $_SESSION['meta']['last_activity'] = time();
@@ -86,20 +93,20 @@ class SessionManager
     {
         $this->logger->write($this->buildLog('destroy'));
 
-        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
-            $_SESSION = [];
-            return;
-        }
+        $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
 
         $_SESSION = [];
-        if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params['path'], $params['domain'],
-                $params['secure'], $params['httponly']
-            );
+        
+        if (!$isCli) {
+            if (ini_get('session.use_cookies')) {
+                $params = session_get_cookie_params();
+                setcookie(session_name(), '', time() - 42000,
+                    $params['path'], $params['domain'],
+                    $params['secure'], $params['httponly']
+                );
+            }
+            session_destroy();
         }
-        session_destroy();
     }
 
     /**
@@ -107,10 +114,7 @@ class SessionManager
      */
     private function validateSession(): void
     {
-        // Skip validation in CLI mode (test environment)
-        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
-            return;
-        }
+        $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
 
         // idle timeout
         $last = $_SESSION['meta']['last_activity'] ?? time();
@@ -120,6 +124,11 @@ class SessionManager
         }
 
         $_SESSION['meta']['last_activity'] = time();
+
+        // Skip anomaly detection in CLI mode (no real HTTP context)
+        if ($isCli) {
+            return;
+        }
 
         // anomaly detection
         $context = $this->currentContext();

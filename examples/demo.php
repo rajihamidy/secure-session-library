@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Session Login Demo</title>
+    <title>Demo Interface for Secure Session Library Implementation</title>
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -52,10 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <strong>✅ Login successful!</strong><br>
             Session securely regenerated.
         </div>
-        <pre class='bg-light p-3 rounded border text-start'>
+ 
+        ";
+    /*           <pre class='bg-light p-3 rounded border text-start'>
 Old Session ID: {$oldId}
 New Session ID: {$newId}
-        </pre>";
+        </pre> */
     } else {
         echo "<script>alert('Invalid login details.');</script>";
     }
@@ -80,9 +82,9 @@ New Session ID: {$newId}
 
 <?php else: ?>
     <!-- Login Form View -->
-    <div class="card shadow-lg border-0 rounded-4" style="width: 100%; max-width: 400px;">
+    <div class="card shadow-lg border-0 rounded-4" style="width: 100%; max-width: 500px;">
         <div class="card-body p-4">
-            <h3 class="text-center mb-3 text-primary fw-bold">Secure Session Login Demo</h3>
+            <h3 class="text-center mb-3 text-primary fw-bold">Demo Interface for Secure Session Library Implementation</h3>
             <p class="text-center text-muted mb-4">Enter your credentials to continue</p>
 
             <form method="POST" class="needs-validation" novalidate>
