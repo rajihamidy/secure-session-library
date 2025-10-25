@@ -1,22 +1,33 @@
 {
     "name": "young-programa/secure-session-library",
-    "description": "Raji Hamidu MCSDF Project(Secure, Composer-compatible session management package for PHP Web Apps) BHU/24/MCSDF/CMP/009",
+    "description": "A secure, Composer-compatible session management library for PHP web applications. Developed by Raji Hamidu (BHU/24/MCSDF/CMP/009) for MCSDF project.",
     "type": "library",
-    "autoload": {
-        "psr-4": {
-           "SecureSession\\": "src/"
-        }
-    },
+    "license": "MIT",
     "authors": [
         {
-           
+            "name": "Raji Hamidu",
             "email": "rajihamidu90@gmail.com"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "SecureSession\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SecureSession\\Tests\\": "tests/"
+        }
+    },
     "require": {
         "php": ">=8.0"
     },
-  "require-dev": {
-    "phpunit/phpunit": "^9.6"
-  }
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
+    "scripts": {
+        "test": "phpunit --configuration phpunit.xml"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
