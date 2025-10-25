@@ -1,14 +1,15 @@
 This simply means you haven’t published your package to Packagist (so Composer doesn’t know what version number to assign).
 Create the repository skeleton with the exact files above (I can generate files you can download).
 
-Produce complete PHPUnit tests and CI config (GitHub Actions).
 
-Create a simple demo application with pages (login, profile, logout).
 
-Prepare slides/screenshots showing integration for your defense.
+Simulated attacks to do (session fixation, hijacking, CSRF, replay)
 
 php -S localhost:8000 -t examples
 # browse http://localhost:8000/demo.php
 
 to carryout Unit test
 vendor/bin/phpunit --testdox
+
+
+composer require secure-session-library/dev-main
