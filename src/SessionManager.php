@@ -14,6 +14,20 @@ class SessionManager
         $this->logger = $logger;
         $this->anomalyDetector = $anomalyDetector;
         $this->testMode = $testMode;
+        
+        // Ensure data directory exists for logs
+        $this->ensureDataDirectory();
+    }
+
+    /**
+     * Ensure the data directory exists for storing session logs
+     */
+    private function ensureDataDirectory(): void
+    {
+        $dataDir = __DIR__ . '/../../data';
+        if (!is_dir($dataDir)) {
+            @mkdir($dataDir, 0755, true);
+        }
     }
 
     /**
@@ -55,9 +69,6 @@ class SessionManager
         
         // Finally, validate session for anomalies
         $this->validateSession();
-
-    // Inject client-side idle logout timer globally
-    $this->config->injectIdleLogoutScript();
     }
 
     /**

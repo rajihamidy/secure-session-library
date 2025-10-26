@@ -2,6 +2,7 @@
 namespace SecureSession\Storage;
 
 use PDO;
+use PDOException;
 
 class SqliteStorage implements StorageInterface
 {
@@ -9,9 +10,20 @@ class SqliteStorage implements StorageInterface
 
     public function __construct(string $file = __DIR__ . '/../../data/session_logs.sqlite')
     {
-        $this->pdo = new PDO('sqlite:' . $file);
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $this->init();
+        $dir = dirname($file);
+
+        // ✅ Automatically create the data directory if it doesn’t exist
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        try {
+            $this->pdo = new PDO('sqlite:' . $file);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->init();
+        } catch (PDOException $e) {
+            throw new PDOException("Failed to connect to SQLite database at '$file': " . $e->getMessage());
+        }
     }
 
     private function init(): void
