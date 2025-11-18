@@ -1,11 +1,14 @@
 This simply means you haven’t published your package to Packagist (so Composer doesn’t know what version number to assign).
 Create the repository skeleton with the exact files above (I can generate files you can download).
+above are done....
+
+how to make developers aware of my library?
 
 
-
-Simulated attacks to do (session fixation, hijacking, CSRF, replay)
+Simulated attacks to test (session fixation, hijacking, CSRF, replay)
 
 php -S localhost:8000 -t examples
+
 # browse http://localhost:8000/demo.php
 
 to carryout Unit test

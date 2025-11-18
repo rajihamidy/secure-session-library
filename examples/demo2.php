@@ -21,10 +21,11 @@ use SecureSession\CsrfProtection;
 
 $config = new SecurityConfig();
 
-// TEMPORARY: Set short timeout for testing (remove in production)
+// Optional: Customize timeout (defaults to 300 seconds / 5 minutes)
 // $config->idleTimeout = 30; // 30 seconds for testing
 
-$storage = new SqliteStorage(__DIR__ . '/../data/session_logs.sqlite');
+// Zero configuration - database location is automatic!
+$storage = new SqliteStorage(); // Auto-creates database in best writable location
 $secret = getenv('SESSION_LOG_HMAC') ?: 'change_me_in_env';
 $logger = new Logger($storage, $secret);
 $anomaly = new AnomalyDetector();
@@ -35,11 +36,11 @@ $sm = new SessionManager($config, $logger, $anomaly);
 $hadSessionCookie = isset($_COOKIE[session_name()]);
 
 $sm->start(); // Start session - auto-logout happens here if idle timeout exceeded
+
 // Initialize CSRF protection
 $csrf = new CsrfProtection($sm);
 
 // Detect if session timed out
-// If cookie existed but now we have no user_id and an empty session, it timed out
 $sessionExpired = $hadSessionCookie && !$sm->get('user_id') && empty($_SESSION);
 
 // --- Logout functionality ---
@@ -76,10 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php if ($sm->get('user_id')): ?>
     <!-- Logged-in View -->
-
     <div class="card shadow-lg border-0 rounded-4 text-center" style="width: 100%; max-width: 420px;">
-    <h3 class="text-center mb-3 text-primary fw-bold">User Dashboard for Secure Session Library </h3>  
-    <div class="card-body p-4">
+        <div class="card-body p-4">
             <h3 class="text-success mb-3 fw-bold">Welcome, <?= htmlspecialchars($sm->get('user_id')) ?> 👋</h3>
             <p class="text-muted">You are securely logged in.</p>
 
@@ -88,13 +87,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="alert alert-info mt-3 small">
                 <strong>ℹ️ Auto-Logout Info:</strong><br>
                 Your session will automatically expire after <strong><?= $config->idleTimeout ?> seconds</strong> (<?= round($config->idleTimeout/60, 1) ?> minutes) of inactivity.<br>
-                <small class="text-muted">Simply refresh or navigate to any page to extend your session.</small>
+                <small class="text-muted">Simply refresh or navigate to any page to extend your session.</small><br>
+                <small class="text-muted mt-1 d-block">Database: <code><?= basename($storage->getDatabasePath()) ?></code></small>
             </div>
 
             <a href="?logout=true" class="btn btn-danger w-100 fw-semibold mt-2">Logout</a>
         </div>
         <div class="card-footer text-center text-muted small py-2">
-            &copy; <?= date('Y'); ?> Secure Session Library by Raji Hamidu MSCDF 009 <br> Bingham University, Karu.
+            &copy; <?= date('Y'); ?> Secure Session Framework
         </div>
     </div>
 
@@ -139,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
         <div class="card-footer text-center text-muted small py-2">
-            &copy; <?= date('Y'); ?> Secure Session Library by Raji Hamidu MSCDF 009 <br> Bingham University, Karu.
+            &copy; <?= date('Y'); ?> Secure Session Library
         </div>
     </div>
 <?php endif; ?>
